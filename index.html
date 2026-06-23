@@ -451,21 +451,26 @@ function satisfiesPairConstraint(arr, minDistance) {
    STATE
    ============================================================ */
 
-// Group is fixed per link via the URL query string, e.g.:
-//   index.html?group=naive
-//   index.html?group=informed
-// This guarantees balanced allocation when links are sent out alternately,
-// rather than relying on 50/50 random assignment within a single link.
+// The participant sees only a neutral condition code in the URL:
+//   index.html?condition=A
+//   index.html?condition=B
+//
+// Internally:
+//   A = naive/uninformed
+//   B = informed
+//
+// This keeps the experimental condition hidden from participants while
+// still allowing the researcher to balance group allocation manually.
 function getGroupFromUrl() {
   const params = new URLSearchParams(window.location.search);
-  const requestedGroup = params.get("group");
+  const conditionCode = params.get("condition");
 
-  if (requestedGroup === "informed") {
-    return "informed";
+  if (conditionCode === "A") {
+    return "naive";
   }
 
-  if (requestedGroup === "naive") {
-    return "naive";
+  if (conditionCode === "B") {
+    return "informed";
   }
 
   return null;
@@ -515,7 +520,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('screen-welcome').innerHTML = `
       <h2>Invalid experiment link</h2>
       <p>
-        This link does not contain a valid study condition.
+        This link does not contain a valid study version.
         Please use the complete link provided by the researcher.
       </p>
     `;
