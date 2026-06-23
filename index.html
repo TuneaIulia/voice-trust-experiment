@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Voice Trustworthiness Study</title>
+<style>
+  :root {
+    --navy: #1B2A4A;
+    --teal: #0D7377;
+    --teal-light: #14AFAB;
+    --coral: #E05C2A;
+    --cream: #F7F5F1;
+    --white: #FFFFFF;
+    --gray: #6B7280;
+    --gray-light: #E2E8F0;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    background: var(--cream);
+    color: var(--navy);
+    line-height: 1.6;
+  }
+  .container {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 24px 20px 60px;
+  }
+  .card {
+    background: var(--white);
+    border-radius: 14px;
+    box-shadow: 0 2px 16px rgba(27,42,74,0.08);
+    padding: 32px 28px;
+    margin-bottom: 20px;
+  }
+  h1 {
+    font-size: 1.5rem;
+    margin: 0 0 8px;
+    color: var(--navy);
+  }
+  h2 {
+    font-size: 1.15rem;
+    margin: 0 0 16px;
+    color: var(--navy);
+  }
+  p { margin: 0 0 14px; }
+  .subtitle {
+    color: var(--gray);
+    font-size: 0.92rem;
+    margin-bottom: 24px;
+  }
+  .btn {
+    display: inline-block;
+    background: var(--teal);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 14px 28px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    width: 100%;
+  }
+  .btn:hover { background: var(--teal-light); }
+  .btn:disabled {
+    background: var(--gray-light);
+    color: var(--gray);
+    cursor: not-allowed;
+  }
+  .btn-secondary {
+    background: var(--white);
+    color: var(--navy);
+    border: 1px solid var(--gray-light);
+  }
+  .btn-secondary:hover { background: var(--cream); }
+  .progress-bar-wrap {
+    background: var(--gray-light);
+    border-radius: 6px;
+    height: 8px;
+    margin-bottom: 24px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    background: var(--teal);
+    height: 100%;
+    transition: width 0.3s ease;
+  }
+  .progress-label {
+    font-size: 0.85rem;
+    color: var(--gray);
+    margin-bottom: 8px;
+  }
+  audio {
+    width: 100%;
+    margin: 16px 0;
+  }
+  .scale-wrap {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    margin: 24px 0 8px;
+  }
+  .scale-btn {
+    flex: 1;
+    aspect-ratio: 1;
+    border: 2px solid var(--gray-light);
+    background: white;
+    border-radius: 10px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--navy);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .scale-btn:hover { border-color: var(--teal-light); }
+  .scale-btn.selected {
+    background: var(--teal);
+    color: white;
+    border-color: var(--teal);
+  }
+  .scale-disabled {
+    opacity: 0.45;
+    pointer-events: none;
+  }
+  .scale-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.78rem;
+    color: var(--gray);
+    margin-bottom: 20px;
+    padding: 0 2px;
+  }
+  .disclosure-box {
+    background: #FEF3EE;
+    border: 1px solid var(--coral);
+    border-radius: 10px;
+    padding: 18px 20px;
+    margin: 20px 0;
+  }
+  .product-context {
+    display: inline-block;
+    background: #EEF7F6;
+    border: 1px solid #B9DEDC;
+    color: var(--teal);
+    border-radius: 999px;
+    padding: 7px 14px;
+    font-size: 0.86rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    margin: 4px auto 10px;
+  }
+  .form-group { margin-bottom: 18px; }
+  label {
+    display: block;
+    font-weight: 600;
+    font-size: 0.92rem;
+    margin-bottom: 6px;
+  }
+  input[type="number"], select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--gray-light);
+    border-radius: 8px;
+    font-size: 1rem;
+    font-family: inherit;
+  }
+  .radio-group { display: flex; gap: 12px; flex-wrap: wrap; }
+  .radio-option {
+    flex: 1;
+    min-width: 100px;
+  }
+  .radio-option input { display: none; }
+  .radio-option label {
+    display: block;
+    text-align: center;
+    padding: 12px 10px;
+    border: 1px solid var(--gray-light);
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    margin: 0;
+  }
+  .radio-option input:checked + label {
+    background: var(--teal);
+    color: white;
+    border-color: var(--teal);
+  }
+  .hidden { display: none !important; }
+  .center { text-align: center; }
+  .small-text { font-size: 0.85rem; color: var(--gray); }
+  .footer-note {
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--gray);
+    margin-top: 30px;
+  }
+  #loadingSpinner {
+    display: inline-block;
+    width: 18px; height: 18px;
+    border: 3px solid var(--gray-light);
+    border-top-color: var(--teal);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    vertical-align: middle;
+    margin-right: 8px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- ============== SCREEN 1: WELCOME / CONSENT ============== -->
+  <div class="card" id="screen-welcome">
+    <h1>Voice Trustworthiness Study</h1>
+    <p class="subtitle">A short listening study — approx. 10 minutes</p>
+    <p>Thank you for taking part in this study. Imagine that a company is evaluating voices for use in short online advertisements. You will listen to a series of promotional voice clips and rate how trustworthy each speaker sounds.</p>
+    <p>Please use headphones in a quiet environment if possible.</p>
+    <p class="small-text">Your responses are anonymous. No audio of you will be recorded at any point. You may stop at any time by closing this page. By clicking "I agree to participate" below, you confirm that you are 18 years or older and consent to take part in this study.</p>
+    <button class="btn" onclick="goToDemographics()">I agree to participate</button>
+  </div>
+
+  <!-- ============== SCREEN 2: DEMOGRAPHICS ============== -->
+  <div class="card hidden" id="screen-demographics">
+    <h2>A few quick questions</h2>
+    <div class="form-group">
+      <label for="age">Age</label>
+      <input type="number" id="age" min="18" max="100" placeholder="e.g. 24">
+    </div>
+    <div class="form-group">
+      <label>Do you have normal hearing (no diagnosed hearing impairment)?</label>
+      <div class="radio-group">
+        <div class="radio-option">
+          <input type="radio" name="hearing" id="hearing-yes" value="Yes">
+          <label for="hearing-yes">Yes</label>
+        </div>
+        <div class="radio-option">
+          <input type="radio" name="hearing" id="hearing-no" value="No">
+          <label for="hearing-no">No</label>
+        </div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>How proficient are you in English?</label>
+      <select id="english-level">
+        <option value="">Select...</option>
+        <option value="Native">Native speaker</option>
+        <option value="Fluent">Fluent / near-native</option>
+        <option value="Advanced">Advanced</option>
+        <option value="Intermediate">Intermediate</option>
+        <option value="Basic">Basic</option>
+      </select>
+    </div>
+    <button class="btn" id="demographics-continue" onclick="goToInstructions()" disabled>Continue</button>
+  </div>
+
+  <!-- ============== SCREEN 3: INSTRUCTIONS (group-dependent) ============== -->
+  <div class="card hidden" id="screen-instructions">
+    <h2>Instructions</h2>
+    <div id="instructions-naive">
+      <p>Imagine that a company is evaluating voices for use in short online advertisements.</p>
+      <p>You will hear a series of promotional messages for different products, one at a time.</p>
+      <p>After each clip, please rate <strong>how trustworthy the speaker sounds in the promotional message</strong>, on a scale from <strong>1 (not at all trustworthy)</strong> to <strong>7 (extremely trustworthy)</strong>.</p>
+      <p>Please focus on the speaker’s voice rather than on whether you personally like the product or agree with the advertising claim.</p>
+      <p>There are no right or wrong answers — please respond based on your honest first impression.</p>
+    </div>
+    <div id="instructions-informed" class="hidden">
+      <p>Imagine that a company is evaluating voices for use in short online advertisements.</p>
+      <p>You will hear a series of promotional messages for different products, one at a time.</p>
+      <div class="disclosure-box">
+        <strong>Please note:</strong> some of the voices you are about to hear were generated by an AI text-to-speech system, while others are recordings of real human speakers.
+      </div>
+      <p>After each clip, please rate <strong>how trustworthy the speaker sounds in the promotional message</strong>, on a scale from <strong>1 (not at all trustworthy)</strong> to <strong>7 (extremely trustworthy)</strong>.</p>
+      <p>Please focus on the speaker’s voice rather than on whether you personally like the product or agree with the advertising claim.</p>
+      <p>There are no right or wrong answers — please respond based on your honest first impression.</p>
+    </div>
+    <button class="btn" onclick="startTrials()">Start</button>
+  </div>
+
+  <!-- ============== SCREEN 4: TRIAL ============== -->
+  <div class="card hidden" id="screen-trial">
+    <div class="progress-label" id="progress-label">Clip 1 of 32</div>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progress-bar-fill" style="width:0%"></div>
+    </div>
+    <p style="text-align:center; font-weight:600; margin-bottom:4px;">Listen to the promotional clip, then rate the speaker.</p>
+    <div class="center">
+      <div class="product-context" id="product-context">Product advertisement</div>
+    </div>
+    <audio id="trial-audio" controls></audio>
+    <p class="center" style="margin-top:18px; font-weight:600;">How trustworthy does this speaker sound in this promotional message?</p>
+    <div class="scale-wrap" id="scale-wrap">
+      <!-- buttons injected by JS -->
+    </div>
+    <div class="scale-labels">
+      <span>1 — Not at all trustworthy</span>
+      <span>7 — Extremely trustworthy</span>
+    </div>
+    <button class="btn" id="next-btn" onclick="submitRating()" disabled>Next</button>
+  </div>
+
+  <!-- ============== SCREEN 4b: POST-EXPERIMENT QUESTIONS ============== -->
+  <div class="card hidden" id="screen-postquestions">
+    <h2>Final questions</h2>
+    <div class="form-group">
+      <label>Before the ratings began, were you told that some recordings were AI-generated?</label>
+      <select id="remembered-disclosure">
+        <option value="">Select...</option>
+        <option value="Yes">Yes</option>
+        <option value="No">No</option>
+        <option value="Unsure">I do not remember</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Did you believe that some recordings were AI-generated?</label>
+      <select id="believed-ai">
+        <option value="">Select...</option>
+        <option value="Yes">Yes</option>
+        <option value="No">No</option>
+        <option value="Unsure">Unsure</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>How familiar are you with AI-generated or synthetic voices?</label>
+      <select id="post-ai-familiarity">
+        <option value="">Select...</option>
+        <option value="Not familiar">Not familiar at all</option>
+        <option value="Slightly familiar">Slightly familiar</option>
+        <option value="Moderately familiar">Moderately familiar</option>
+        <option value="Very familiar">Very familiar</option>
+      </select>
+    </div>
+    <button class="btn" onclick="finishPostQuestions()">Submit responses</button>
+  </div>
+
+  <!-- ============== SCREEN 5: SUBMITTING ============== -->
+  <div class="card hidden center" id="screen-submitting">
+    <p><span id="loadingSpinner"></span>Submitting your responses, please don't close this page...</p>
+  </div>
+
+  <!-- ============== SCREEN 6: THANK YOU ============== -->
+  <div class="card hidden center" id="screen-done">
+    <h2>Thank you!</h2>
+    <p>Your responses have been recorded.</p>
+    <p>This study investigates whether knowing that some voices are AI-generated affects perceived trustworthiness. Participants took part in one of two conditions. One group was told before the ratings that some recordings were AI-generated, while the other group received no information about voice origin.</p>
+    <p class="small-text">You may now close this page.</p>
+  </div>
+
+  <!-- ============== SCREEN ERR: SUBMISSION ERROR ============== -->
+  <div class="card hidden center" id="screen-error">
+    <h2>Something went wrong</h2>
+    <p>We couldn't submit your responses. Please check your internet connection and try again.</p>
+    <button class="btn" onclick="submitData()">Retry submission</button>
+  </div>
+
+  <div class="footer-note">EwS 2026</div>
+</div>
+
+<script>
+/* ============================================================
+   CONFIGURATION
+   ============================================================ */
+
+// IMPORTANT: replace this with your actual Formspree endpoint URL
+// e.g. "https://formspree.io/f/abcd1234"
+const FORMSPREE_ENDPOINT = "https://formspree.io/f/xrewbbro";
+
+// All 32 stimulus filenames. Audio files must sit in an "audio/" folder
+// alongside this HTML file when hosted.
+const SPEAKERS = ["05", "09", "22", "24"];
+const SENTENCES = ["B5", "B6", "B7", "B8"];
+
+const PRODUCT_CONTEXTS = {
+  B5: "Chocolate advertisement",
+  B6: "Clothing advertisement",
+  B7: "Car advertisement",
+  B8: "Soft-drink advertisement"
+};
+
+function buildStimulusList() {
+  const stimuli = [];
+  SPEAKERS.forEach(spk => {
+    SENTENCES.forEach(sent => {
+      const pairKey = `${sent}_${spk}`; // shared by the natural/synthetic twins
+      stimuli.push({
+        file: `audio/trst_${sent}_${spk}.wav`,
+        voiceType: "natural",
+        speaker: spk,
+        sentence: sent,
+        id: `trst_${sent}_${spk}`,
+        pairKey: pairKey
+      });
+      stimuli.push({
+        file: `audio/synth_trst_${sent}_${spk}.wav`,
+        voiceType: "synthetic",
+        speaker: spk,
+        sentence: sent,
+        id: `synth_trst_${sent}_${spk}`,
+        pairKey: pairKey
+      });
+    });
+  });
+  return stimuli;
+}
+
+// Minimum number of trials that must separate a natural clip from its
+// matched synthetic twin (same speaker + sentence), so participants are
+// less likely to notice/compare them directly back-to-back.
+const MIN_PAIR_DISTANCE = 4;
+
+// Produces a randomized order where, for every pairKey, the two matching
+// items (natural/synthetic of the same speaker+sentence) are at least
+// MIN_PAIR_DISTANCE trials apart. Falls back gracefully if it can't find
+// a valid arrangement after many attempts (extremely unlikely with 32 items).
+function shuffleWithPairConstraint(items, minDistance) {
+  const maxAttempts = 500;
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    const candidate = shuffle(items.slice());
+    if (satisfiesPairConstraint(candidate, minDistance)) {
+      return candidate;
+    }
+  }
+  // Fallback: plain shuffle if constraint couldn't be satisfied
+  // (should not happen in practice with 32 items / distance 4).
+  return shuffle(items.slice());
+}
+
+function satisfiesPairConstraint(arr, minDistance) {
+  const positions = {};
+  for (let i = 0; i < arr.length; i++) {
+    const key = arr[i].pairKey;
+    if (positions[key] !== undefined) {
+      if (Math.abs(i - positions[key]) < minDistance) {
+        return false;
+      }
+    } else {
+      positions[key] = i;
+    }
+  }
+  return true;
+}
+
+/* ============================================================
+   STATE
+   ============================================================ */
+
+// Group is fixed per link via the URL query string, e.g.:
+//   index.html?group=naive
+//   index.html?group=informed
+// This guarantees balanced allocation when links are sent out alternately,
+// rather than relying on 50/50 random assignment within a single link.
+function getGroupFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  const requestedGroup = params.get("group");
+
+  if (requestedGroup === "informed") {
+    return "informed";
+  }
+
+  if (requestedGroup === "naive") {
+    return "naive";
+  }
+
+  return null;
+}
+
+let group = getGroupFromUrl(); // "naive" or "informed"; null if the URL is invalid
+let stimuli = [];
+let currentIndex = 0;
+let selectedRating = null;
+let responses = [];
+let participantId = null;
+let demographics = {};
+let postQuestions = {};
+let trialStartTime = null;
+
+function shuffle(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
+
+function generateParticipantId() {
+  return 'p_' + Date.now().toString(36) + '_' + Math.random().toString(36).substr(2, 6);
+}
+
+/* ============================================================
+   SCREEN NAVIGATION
+   ============================================================ */
+
+function showScreen(id) {
+  document.querySelectorAll('.card').forEach(c => c.classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+}
+
+function goToDemographics() {
+  participantId = generateParticipantId();
+  // Group is already fixed from the URL (see getGroupFromUrl above) —
+  // no random assignment happens here anymore.
+  showScreen('screen-demographics');
+}
+
+// Enable continue button only once required fields are filled
+document.addEventListener('DOMContentLoaded', function() {
+  if (group === null) {
+    document.getElementById('screen-welcome').innerHTML = `
+      <h2>Invalid experiment link</h2>
+      <p>
+        This link does not contain a valid study condition.
+        Please use the complete link provided by the researcher.
+      </p>
+    `;
+    return;
+  }
+
+  const ageInput = document.getElementById('age');
+  const englishSelect = document.getElementById('english-level');
+  const continueBtn = document.getElementById('demographics-continue');
+
+  function checkDemographicsComplete() {
+    const ageOk = ageInput.value && parseInt(ageInput.value) >= 18;
+    const hearingOk = document.querySelector('input[name="hearing"]:checked');
+    const englishOk = englishSelect.value !== '';
+    continueBtn.disabled = !(ageOk && hearingOk && englishOk);
+  }
+
+  ageInput.addEventListener('input', checkDemographicsComplete);
+  englishSelect.addEventListener('change', checkDemographicsComplete);
+  document.querySelectorAll('input[name="hearing"]').forEach(r => {
+    r.addEventListener('change', checkDemographicsComplete);
+  });
+
+  // Build the 1-7 rating scale buttons once
+  const scaleWrap = document.getElementById('scale-wrap');
+  for (let i = 1; i <= 7; i++) {
+    const btn = document.createElement('button');
+    btn.className = 'scale-btn';
+    btn.textContent = i;
+    btn.dataset.value = i;
+    btn.onclick = () => selectRating(i, btn);
+    scaleWrap.appendChild(btn);
+  }
+});
+
+function goToInstructions() {
+  demographics = {
+    age: document.getElementById('age').value,
+    hearing: document.querySelector('input[name="hearing"]:checked').value,
+    englishLevel: document.getElementById('english-level').value
+  };
+
+  if (group === "naive") {
+    document.getElementById('instructions-naive').classList.remove('hidden');
+    document.getElementById('instructions-informed').classList.add('hidden');
+  } else {
+    document.getElementById('instructions-naive').classList.add('hidden');
+    document.getElementById('instructions-informed').classList.remove('hidden');
+  }
+  showScreen('screen-instructions');
+}
+
+function startTrials() {
+  stimuli = shuffleWithPairConstraint(buildStimulusList(), MIN_PAIR_DISTANCE);
+  currentIndex = 0;
+  responses = [];
+  showScreen('screen-trial');
+  loadTrial();
+}
+
+/* ============================================================
+   TRIAL LOGIC
+   ============================================================ */
+
+function loadTrial() {
+  selectedRating = null;
+  document.querySelectorAll('.scale-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById('next-btn').disabled = true;
+
+  // Block rating until the clip has finished playing in full.
+  const scaleWrap = document.getElementById('scale-wrap');
+  scaleWrap.classList.add('scale-disabled');
+
+  const stim = stimuli[currentIndex];
+  document.getElementById('product-context').textContent =
+    PRODUCT_CONTEXTS[stim.sentence] || "Product advertisement";
+
+  const audio = document.getElementById('trial-audio');
+  audio.src = stim.file;
+  audio.load();
+
+  audio.onended = function () {
+    scaleWrap.classList.remove('scale-disabled');
+    trialStartTime = performance.now();
+  };
+
+  const pct = Math.round((currentIndex / stimuli.length) * 100);
+  document.getElementById('progress-bar-fill').style.width = pct + '%';
+  document.getElementById('progress-label').textContent =
+    `Clip ${currentIndex + 1} of ${stimuli.length}`;
+
+  trialStartTime = null;
+}
+
+function selectRating(value, btnEl) {
+  selectedRating = value;
+  document.querySelectorAll('.scale-btn').forEach(b => b.classList.remove('selected'));
+  btnEl.classList.add('selected');
+  document.getElementById('next-btn').disabled = false;
+}
+
+function submitRating() {
+  if (selectedRating === null) return;
+
+  const stim = stimuli[currentIndex];
+  responses.push({
+    trialNumber: currentIndex + 1,
+    stimulusId: stim.id,
+    stimulusFile: stim.file,
+    pairKey: stim.pairKey,
+    voiceType: stim.voiceType,
+    speaker: stim.speaker,
+    sentence: stim.sentence,
+    productContext: PRODUCT_CONTEXTS[stim.sentence] || "Product advertisement",
+    rating: selectedRating,
+    responseTimeMs: trialStartTime === null ? null : Math.round(performance.now() - trialStartTime)
+  });
+
+  currentIndex++;
+  if (currentIndex < stimuli.length) {
+    loadTrial();
+  } else {
+    document.getElementById('progress-bar-fill').style.width = '100%';
+    showScreen('screen-postquestions');
+  }
+}
+
+/* ============================================================
+   POST-EXPERIMENT QUESTIONS (manipulation check + AI familiarity)
+   ============================================================ */
+
+function finishPostQuestions() {
+  const rememberedDisclosure = document.getElementById('remembered-disclosure').value;
+  const believedAi = document.getElementById('believed-ai').value;
+  const aiFamiliarity = document.getElementById('post-ai-familiarity').value;
+
+  if (!rememberedDisclosure || !believedAi || !aiFamiliarity) {
+    alert("Please answer all three questions.");
+    return;
+  }
+
+  postQuestions = {
+    rememberedDisclosure: rememberedDisclosure,
+    believedAi: believedAi,
+    aiFamiliarity: aiFamiliarity
+  };
+
+  submitData();
+}
+
+/* ============================================================
+   DATA SUBMISSION
+   ============================================================ */
+
+function submitData() {
+  showScreen('screen-submitting');
+
+  const payload = {
+    participantId: participantId,
+    group: group,
+    age: demographics.age,
+    hearing: demographics.hearing,
+    englishLevel: demographics.englishLevel,
+    rememberedDisclosure: postQuestions.rememberedDisclosure,
+    believedAi: postQuestions.believedAi,
+    aiFamiliarity: postQuestions.aiFamiliarity,
+    timestamp: new Date().toISOString(),
+    responses: JSON.stringify(responses)
+  };
+
+  fetch(FORMSPREE_ENDPOINT, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "Accept": "application/json" },
+    body: JSON.stringify(payload)
+  })
+  .then(res => {
+    if (res.ok) {
+      showScreen('screen-done');
+    } else {
+      showScreen('screen-error');
+    }
+  })
+  .catch(() => {
+    showScreen('screen-error');
+  });
+}
+</script>
+
+</body>
+</html>
